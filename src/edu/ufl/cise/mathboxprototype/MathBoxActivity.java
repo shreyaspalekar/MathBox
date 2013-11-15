@@ -9,6 +9,7 @@ import android.gesture.GestureLibraries;
 import android.gesture.GestureLibrary;
 import android.gesture.GestureOverlayView;
 import android.gesture.GestureOverlayView.OnGesturePerformedListener;
+import android.gesture.GestureStore;
 import android.gesture.Prediction;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -23,7 +24,10 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import expr.Expr;
@@ -44,6 +48,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     private TextView mTextViewExpr;
     private boolean bExpressionEvaluated =  false;
     private String mStrExpression = "";
+    private ArrayList<String> mArrayListHistory = null;
+    private ListView mDrawerList;
+	private String[] mListItemTitles;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,12 +58,18 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         setContentView(R.layout.activity_math_box);
         
         mTitle = mDrawerTitle = getTitle();
+        mListItemTitles = getResources().getStringArray(R.array.list_item_array);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow,
                 GravityCompat.START);
-
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
+
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+                R.layout.drawer_list_item, mListItemTitles));
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
@@ -81,7 +94,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 
         mGestureOverlayView = (GestureOverlayView) findViewById(R.id.gestureOverlayView1);
         mGestureOverlayView.addOnGesturePerformedListener(this);
-        mGestureLibrary = GestureLibraries.fromRawResource(this, R.raw.gestures_10_7_2_36);
+        
+        mGestureLibrary = GestureLibraries.fromRawResource(this, R.raw.gestures_10_9_13_14);
+        mGestureLibrary.setOrientationStyle(GestureStore.ORIENTATION_SENSITIVE);
+        //mGestureLibrary.setSequenceType(GestureStore.SEQUENCE_INVARIANT);
         if (!mGestureLibrary.load()) 
             finish();
         
@@ -98,6 +114,8 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         mTextViewExpr = (TextView) findViewById(R.id.exprTextView1);
         mTextViewExpr.setTextColor(Color.GRAY);
         mTextViewExpr.setText(Constants.textExpression);
+        
+        mArrayListHistory = new ArrayList<String>();
     }
 
 
@@ -116,8 +134,37 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
           return true;
         }
         // Handle your other action bar items...
-
+        // Handle item selection
+        switch (item.getItemId()) {
+	        case R.id.action_share:
+	        	Log.d(Constants.appName,"Share");
+	            return true;
+	        case R.id.action_settings:
+	            return true;
+        }
         return super.onOptionsItemSelected(item);
+    }
+    
+    /* The click listner for ListView in the navigation drawer */
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position);
+        }
+    }
+
+    private void selectItem(int position) {
+        // update selected item and title, then close the drawer
+        mDrawerList.setItemChecked(position, true);
+        Log.d(Constants.appName,"Item at pos " + position + " clicked");
+        switch(position) {
+        	case 0:
+        		for(String historyItem:mArrayListHistory)
+        			Log.d(Constants.appName,historyItem);
+        	default:
+        }
+        mDrawerLayout.closeDrawer(mDrawerList);
+        mDrawerList.setItemChecked(position, false);
     }
     
     @Override
@@ -206,8 +253,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 			Log.d(Constants.appName, "Going to evaluate:\"" + mStrExpression + "\"");
 			//Calculable calc = new ExpressionBuilder(mStrExpression).build();
 			Expr expr = Parser.parse(mStrExpression); 
-			mStrExpression = Double.toString(expr.value());
+			mStrExpression = mStrExpression + "=" +  expr.value();
 			mTextViewExpr.setText(mStrExpression);
+			bExpressionEvaluated =  true;
+			mArrayListHistory.add(mStrExpression);
 		}
 		catch (SyntaxException e) {
 			Log.d(Constants.appName,e.explain());
@@ -255,7 +304,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	}
 	
 	private void handleBackspace() {
-		if(mStrExpression.length() >= 2) {
+		if(mStrExpression.length() >= 2 && !bExpressionEvaluated) {
 			mStrExpression = mStrExpression.substring(0, mStrExpression.length()-1);
 			mTextViewExpr.setText(mStrExpression);	
 		}

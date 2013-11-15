@@ -15,7 +15,8 @@
 	    android:paddingLeft="@dimen/activity_horizontal_margin"
 	    android:paddingRight="@dimen/activity_horizontal_margin"
 	    android:paddingTop="@dimen/activity_vertical_margin"
-	    tools:context=".MathBoxActivity" >
+	    android:background="#ffffff"
+	    tools:context=".MathBoxMathJaxActivity" >
 
 
 	    <android.gesture.GestureOverlayView
@@ -23,16 +24,7 @@
 	        android:layout_width="match_parent"
 	        android:layout_height="match_parent"
 	        android:gestureColor="#ff000000"
-	        android:gestureStrokeType="multiple"
-	        android:orientation="horizontal">
-	    </android.gesture.GestureOverlayView>
-
-	    <TextView
-            android:id="@+id/exprTextView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#fff" />
+	        android:gestureStrokeType="multiple" />
 
         <ImageButton
             android:id="@+id/deleteButton1"
@@ -42,6 +34,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/trash_icon_black" 
             android:background="@null"
+            android:paddingTop="15dp"
             android:paddingRight="15dp"
             android:paddingLeft="15dp" />
         <ImageButton
@@ -52,6 +45,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/checkmark_icon" 
             android:background="@null"
+            android:paddingTop="15dp"
             android:paddingRight="15dp"
             android:paddingLeft="15dp" />
         <ImageButton
@@ -62,8 +56,17 @@
             android:layout_height="wrap_content"
             android:src="@drawable/arrow_back_icon" 
             android:background="@null"
+            android:paddingTop="15dp"
             android:paddingRight="15dp"
             android:paddingLeft="15dp" />
+        <WebView
+            android:id="@+id/exprTextView1"
+            android:layout_toLeftOf="@+id/backspaceButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#fff"
+            android:paddingRight="15dp"/>
+        
 <!-- -->
 	</RelativeLayout>
  
