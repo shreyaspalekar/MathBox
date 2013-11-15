@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MathBox MathJax</string>
+    <string name="app_name">MathBox</string>
     <string-array name="list_item_array">
         <item>History</item>
         <item>Help</item>
