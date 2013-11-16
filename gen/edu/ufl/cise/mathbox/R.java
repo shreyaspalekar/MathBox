@@ -64,6 +64,8 @@ public final class R {
         public static final int gestures_10_7_2_36=0x7f050005;
         public static final int gestures_10_8_23_09=0x7f050006;
         public static final int gestures_10_9_13_14=0x7f050007;
+        public static final int gestures_11_15_12_07=0x7f050008;
+        public static final int gestures_11_15_16_52_with_0=0x7f050009;
     }
     public static final class string {
         public static final int action_settings=0x7f070002;
@@ -72,6 +74,7 @@ public final class R {
         public static final int drawer_close=0x7f070005;
         public static final int drawer_open=0x7f070004;
         public static final int hello_world=0x7f070003;
+        public static final int reco_pop=0x7f070006;
     }
     public static final class style {
         /** 

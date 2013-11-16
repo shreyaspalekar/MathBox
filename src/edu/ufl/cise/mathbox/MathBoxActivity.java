@@ -3,6 +3,8 @@ package edu.ufl.cise.mathbox;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.gesture.Gesture;
 import android.gesture.GestureLibraries;
@@ -16,6 +18,7 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -50,9 +53,12 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     private ArrayList<String> mArrayListHistory = null;
     private ListView mDrawerList;
 	private String[] mListItemTitles;
-    
-    @Override
+
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
+		// app initialization
+		Constants.initUserReadableNames();
+		
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_math_box);
         
@@ -95,7 +101,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         mGestureOverlayView.addOnGesturePerformedListener(this);
         mGestureOverlayView.setBackgroundColor(0xffffff);
         
-        mGestureLibrary = GestureLibraries.fromRawResource(this,R.raw.gestures_10_10_21_29);
+        mGestureLibrary = GestureLibraries.fromRawResource(this,R.raw.gestures);
         mGestureLibrary.setOrientationStyle(8);
         mGestureLibrary.setSequenceType(GestureStore.SEQUENCE_SENSITIVE);
         if (!mGestureLibrary.load()) 
@@ -116,12 +122,12 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         mWebViewExpr.getSettings().setBuiltInZoomControls(false);
         mWebViewExpr.loadDataWithBaseURL("http://bar", "<body bgcolor=\"#ffffff\"><script type='text/x-mathjax-config'>"
 		                      +"MathJax.Hub.Config({ " 
-							  	+"showMathMenu: false, "
+							  	+"showMathMenu: false,"
 							  	+"jax: ['input/TeX','output/HTML-CSS'], "
 							  	+"extensions: ['tex2jax.js'], " 
 							  	+"TeX: { extensions: ['AMSmath.js','AMSsymbols.js',"
 							  	  +"'noErrors.js','noUndefined.js'] }, "
-							  	+"showProcessingMessages: false, "
+							  	+"showProcessingMessages: false,"
 							  	+ "displayAlign: \"left\", "
 							  	+ "\"HTML-CSS\": { scale: 130}"
 							  +"});</script>"
@@ -209,53 +215,43 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     @Override
     public void onGesturePerformed(GestureOverlayView overlay, Gesture gesture) {
     	ArrayList<Prediction> predictions = mGestureLibrary.recognize(gesture);
-    	
-    	String strCurrentPrediction;
-    	Double predictionScore;
-    	
-    	strCurrentPrediction = predictions.get(0).toString();
-    	predictionScore = predictions.get(0).score;
-    	
-    	//Filter based on numOfStrokes
-    	int numOfStroke = gesture.getStrokesCount();
-    	Log.d(Constants.appName, "Recognized = " + strCurrentPrediction + " Score = " + predictionScore);
-    	
-    	//Handling for plus and *
-    	if(strCurrentPrediction.equals(Constants.plus) || strCurrentPrediction.equals(Constants.asterik)) {
-    		Log.d(Constants.appName, "inside plus or star numstroke=" + numOfStroke);
-    		if (numOfStroke == 2)
-    			strCurrentPrediction = Constants.plus;
-    		else if(numOfStroke == 4)
-    			strCurrentPrediction = Constants.asterik;
-    	}
+    	final ArrayList<String> arrListPredictions;
     	
     	if(bExpressionEvaluated) {
     		bExpressionEvaluated = false;
     		mStrExpression = "";
     		setWebViewText(mStrExpression);
     	}
-    		
-    	if(predictionScore > 2.00) {
-    		if(strCurrentPrediction.matches(Constants.equalTo)) {
-        		evaluateExpression();
-        		bExpressionEvaluated = true;
-        	}
-        	else if(strCurrentPrediction.matches(Constants.backspace)){
-        		handleBackspace();
-        	}
-        	else if(strCurrentPrediction.matches(Constants.checkmark)){
-				evaluateExpression();
-			}
-        	else if(strCurrentPrediction.matches(Constants.clear)){
-        		clearCanvas();
-        	}
-        	else if(strCurrentPrediction.matches(Constants.sigma)) {
-        		mStrExpression += "\\sum\\limits_{x=1}^n";
-        	}
-        	else {
-        		mStrExpression += strCurrentPrediction;
-        	}
-    		setWebViewText(mStrExpression);
+    	arrListPredictions = Recognizer.recognizeGesture(predictions, gesture);
+    	if(arrListPredictions.size() != 0) {
+    		if(arrListPredictions.size() == 1) {
+    			// you are damn sure about the prediction
+    			handlePrediction(arrListPredictions.get(0));
+    		}
+    		else {
+    			String[] predictionsArr = new String[arrListPredictions.size() + 1];
+    			predictionsArr = arrListPredictions.toArray(predictionsArr);
+    			
+    			for(int i=0; i < predictionsArr.length; i++) {
+    				if(Constants.userReadableNames.containsKey(predictionsArr[i]))
+    						predictionsArr[i] = Constants.userReadableNames.get(predictionsArr[i]); 
+    			}
+    			predictionsArr[arrListPredictions.size()] = Constants.neverMind; 
+    					
+    			AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, android.R.style.Theme_Black));
+        	    builder.setTitle(R.string.reco_pop);
+        	    builder.setItems(predictionsArr, new DialogInterface.OnClickListener() {
+        	    	public void onClick(DialogInterface dialog, int which) {
+        	    		// The 'which' argument contains the index position
+        	    		// of the selected item
+        	    		if(which < arrListPredictions.size()) {
+        	    			handlePrediction(arrListPredictions.get(which).toString());
+        	    		}
+        	    		//Else, ignoring selected - close the dialog
+        	    	}
+        	    });
+        	    builder.show();
+    		}
     	}
     	else {
     		if(mStrExpression.length() == 0) {
@@ -266,6 +262,67 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 			Toast.makeText(this, "Couldn't recognize the symbol!", Toast.LENGTH_SHORT).show();
 		}
     	Log.d(Constants.appName, "mStrExpression = " + mStrExpression);
+    }
+    
+    @Override
+	public boolean onTouch(View v, MotionEvent event) {
+		switch(v.getId()) {
+			case R.id.deleteButton1: {
+				if(event.getAction() == MotionEvent.ACTION_DOWN) {
+					mClearButton.setImageResource(R.drawable.trash_icon_green);
+					return true;
+				}
+				else if(event.getAction() == MotionEvent.ACTION_UP) {
+					mClearButton.setImageResource(R.drawable.trash_icon_black);
+					clearCanvas();
+					return true;
+				}
+				
+				return false;
+			}
+			case R.id.checkMarkButton1: {
+				if(event.getAction() == MotionEvent.ACTION_UP) {
+					if(bExpressionEvaluated) {
+			    		bExpressionEvaluated = false;
+			    		mStrExpression = "";
+			    		setWebViewText(mStrExpression);
+			    	}
+					evaluateExpression();
+					return true;
+				}
+				return false;
+			}
+			case R.id.backspaceButton1: {
+				if(event.getAction() == MotionEvent.ACTION_UP) {
+					handleBackspace();
+					return true;
+				}
+				return false;
+			}
+		}
+		return false;
+	}   
+    
+    private void handlePrediction(String predicted) {
+    	if(predicted.equals(Constants.equalTo)) {
+    		evaluateExpression();
+    	}
+    	else if(predicted.equals(Constants.backspace)){
+    		handleBackspace();
+    	}
+    	else if(predicted.equals(Constants.checkmark)){
+			evaluateExpression();
+		}
+    	else if(predicted.equals(Constants.clear)){
+    		clearCanvas();
+    	}
+    	else if(predicted.equals(Constants.sigma)) {
+    		mStrExpression += "\\sum\\limits_{i=1}^n";
+    	}
+    	else {
+    		mStrExpression += predicted;
+    	}
+		setWebViewText(mStrExpression);
     }
     
     private void evaluateExpression() {
@@ -290,38 +347,6 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     }
 
 
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		switch(v.getId()) {
-			case R.id.deleteButton1: {
-				if(event.getAction() == MotionEvent.ACTION_DOWN) {
-					mClearButton.setImageResource(R.drawable.trash_icon_green);
-					return true;
-				}
-				else if(event.getAction() == MotionEvent.ACTION_UP) {
-					mClearButton.setImageResource(R.drawable.trash_icon_black);
-					clearCanvas();
-					return true;
-				}
-				return false;
-			}
-			case R.id.checkMarkButton1: {
-				if(event.getAction() == MotionEvent.ACTION_UP) {
-					evaluateExpression();
-					return true;
-				}
-				return false;
-			}
-			case R.id.backspaceButton1: {
-				if(event.getAction() == MotionEvent.ACTION_UP) {
-					handleBackspace();
-					return true;
-				}
-				return false;
-			}
-		}
-		return false;
-	}
 	
 	private void handleBackspace() {
 		if(mStrExpression.length() >= 2 && !bExpressionEvaluated) {
