@@ -50,6 +50,12 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     private WebView mWebViewExpr;
     private boolean bExpressionEvaluated =  false;
     private String mStrExpression = "";
+    /*Added by Anirudh Subramanian on 16th November Start*/
+    private String mEvaluatedExpression = "";
+    private boolean bExpressionMemorized = false;
+    private String mMemorizedExpression = "";
+    private boolean bFromMemorize = false;
+    /*Added by Anirudh Subramanian on 16th November End*/
     private ArrayList<String> mArrayListHistory = null;
     private ListView mDrawerList;
 	private String[] mListItemTitles;
@@ -220,7 +226,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     	if(bExpressionEvaluated) {
     		bExpressionEvaluated = false;
     		mStrExpression = "";
-    		setWebViewText(mStrExpression);
+    		/*Added by Anirudh Subramanian on 16th November Start*/
+    		mStrExpression = mEvaluatedExpression;	//setting the value of expression to the evaluated expression	
+    		/*Added by Anirudh Subramanian on 16th November End*/
+		setWebViewText(mStrExpression);
     	}
     	arrListPredictions = Recognizer.recognizeGesture(predictions, gesture);
     	if(arrListPredictions.size() != 0) {
@@ -285,6 +294,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 					if(bExpressionEvaluated) {
 			    		bExpressionEvaluated = false;
 			    		mStrExpression = "";
+					/*Added by Anirudh Subramanian on 16th November Start*/
+					mStrExpression = mEvaluatedExpression;
+					/*Added by Anirudh Subramanian on 16th November End*/
 			    		setWebViewText(mStrExpression);
 			    	}
 					evaluateExpression();
@@ -319,6 +331,18 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     	else if(predicted.equals(Constants.sigma)) {
     		mStrExpression += "\\sum\\limits_{i=1}^n";
     	}
+	/*Added by Anirudh Subramanian on 17th November for memory feature implementation Start*/
+	/*if gesture is m, first evaluate expression and then memorize value of the evaluation*/
+	else if(predicted.equals(Constants.memorize)) {
+		bFromMemorize = true;
+		evaluateExpression();
+		bFromMemorize = false;
+		memorizeValue();
+	}
+	else if(predicted.equals(Constants.retrieveMemory)) {
+		retrieveMemory();	
+	}
+	/*Added by Anirudh Subramanian on 17th November for memory feature implementation End*/
     	else {
     		mStrExpression += predicted;
     	}
@@ -331,20 +355,62 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 			Log.d(Constants.appName, "Going to evaluate:\"" + mStrExpression + "\"");
 			//Calculable calc = new ExpressionBuilder(mStrExpression).build();
 			Expr expr = Parser.parse(mStrExpression); 
-			mStrExpression = mStrExpression + "=" +  expr.value();
+			/*Commented by Anirudh Subramanian on 16th November Start*/
+			//mStrExpression = mStrExpression + "=" +  expr.value();
+			//setWebViewText(mStrExpression);
+			//bExpressionEvaluated =  true;
+			//mArrayListHistory.add(mStrExpression);
+			/*Commented by Anirudh Subramanian on 16th November end*/
+			Double exprValue = expr.value();
+    			/*Added by Anirudh Subramanian on 16th November Start*/
+			if (( exprValue == Math.floor(exprValue)) && !Double.isInfinite(exprValue)) {
+				    mEvaluatedExpression = "" + exprValue.intValue();
+			}
+			else {
+				mEvaluatedExpression = "" + expr.value();
+			}
+			
+			mStrExpression = mStrExpression + "=" +  mEvaluatedExpression;
 			setWebViewText(mStrExpression);
 			bExpressionEvaluated =  true;
 			mArrayListHistory.add(mStrExpression);
+    			/*Added by Anirudh Subramanian on 16th November End*/
 		}
 		catch (SyntaxException e) {
 			Log.d(Constants.appName,e.explain());
-			Toast.makeText(this, "Please check the expression!", Toast.LENGTH_SHORT).show();
-	        setWebViewText(Constants.textExpression);
-	        mStrExpression = "";
+
+    			/*Modified by Anirudh Subramanian on 17th November End*/
+			if(!bFromMemorize)
+				Toast.makeText(this, "Please check the expression!", Toast.LENGTH_SHORT).show();
+			else
+				Toast.makeText(this, "The expression cannot be evaluated and so cannot be memorized!",Toast.LENGTH_SHORT).show();
+
+			setWebViewText(Constants.textExpression);
+	        	mStrExpression = "";
 		}
 		mGestureOverlayView.cancelClearAnimation();
 		mGestureOverlayView.clear(true);
     }
+
+   /*Added by Anirudh Subramanian on 17th November Begin*/
+	private void memorizeValue() {
+		mMemorizedExpression = mEvaluatedExpression;
+		bExpressionMemorized = true;
+	}
+
+	private void retrieveMemory() {
+		if(!bExpressionMemorized) {
+			Toast.makeText(this,"Nothing in memory!",Toast.LENGTH_SHORT).show();
+			return;
+		}
+		else {
+			mStrExpression += mMemorizedExpression;
+			bExpressionMemorized = false;
+		}
+
+
+	}
+   /*Added by Anirudh Subramanian on 17th November End*/ 
 
 
 	

@@ -32,6 +32,12 @@ public class Constants {
 	public static final String pi = "pi";
 	//Special symbols end
 	
+	//Added by Anirudh Subramanian on 17th November (Memory) Start
+	public static final String memorize = "m";
+	public static final String retrieveMemory = "r";
+	//Added by Anirudh Subramanian on 17th November (Memory) End
+	
+	
 	public static final HashMap<String,String> userReadableNames = new HashMap<String, String>();
 	
 	public class UserReadableNames {
