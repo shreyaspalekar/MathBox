@@ -12,4 +12,15 @@
 	<string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="reco_pop">Did you mean?</string>
+    <string name="delete_button_title">Clear canvas</string>
+	<string name="delete_button_msg">Press this button or draw \"C\" gesture to clear the whole expression.</string>
+	<string name="checkmark_button_title">Evaluate expression</string>
+	<string name="checkmark_button_msg">Press this button or draw \"=\"/\"\u2713\" gesture to clear the whole expression.</string>
+	<string name="backspace_button_title">Delete last symbol - Backspace</string>
+	<string name="backspace_button_msg">Press this button or draw \"&lt;\" to clear the last recognized symbol. 
+	    Click on Menu (Top-right) to access help and other options.</string>
+	<string name="output_area_title">Display</string>
+	<string name="output_area_msg">Recognized characters and evaluated expression will be shown here.</string>
+	<string name="gesture_area_title">MathBox</string>
+	<string name="gesture_area_msg">Input Area - Draw your gestures and expression here one at a time!</string>
 </resources>
