@@ -55,6 +55,7 @@ public class Constants {
  	public static final String cantBeMemorized = "The expression cannot be evaluated and so cannot be memorized!";
 	public static final String valueForVariable = "Value stored in memory for variable";
 	public static final String constSubstBy     = "The constant is substituted by";
+	public static final String tutOnLaunch = "tutorialOnLaunch";
 	//Added by Sagar Parmar as constants 17th Nov end 
 	
 	public static final HashMap<String,String> userReadableNames = new HashMap<String, String>();
