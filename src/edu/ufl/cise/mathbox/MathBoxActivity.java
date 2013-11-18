@@ -1,6 +1,8 @@
 package edu.ufl.cise.mathbox;
 
 import java.util.ArrayList;
+import com.espian.showcaseview.ShowcaseView;
+import com.espian.showcaseview.ShowcaseViews;
 import edu.ufl.cise.mathbox.ShakeEventListener;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -76,9 +78,14 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     /*Added by Anirudh Subramanian on 16th November End*/
     private ArrayList<String> mArrayListHistory = null;
     private ListView mDrawerList;
-	private String[] mListItemTitles;
-        private HashMap<String, Double> variablesSet = new HashMap<String, Double>();
-
+    private String[] mListItemTitles;
+    /*Added by Anirudh Subramanian on 17th November Begin*/
+    private HashMap<String, Double> variablesSet = new HashMap<String, Double>();
+    /*Added by Anirudh Subramanian on 17th November End*/
+    /* Added by Sagar Parmar on 17th November Start */
+    ShowcaseViews sViews;
+    ShowcaseView.ConfigOptions svOptions = new ShowcaseView.ConfigOptions();
+    /* Added by Sagar Parmar on 17th November End*/
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
 		// app initialization
@@ -88,6 +95,39 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_math_box);
         
+	/* Added by Sagar Parmar on 17th November for showcase view Start */
+	svOptions.hideOnClickOutside = false;
+	svOptions.block = false;
+	sViews = new ShowcaseViews(this,new ShowcaseViews.OnShowcaseAcknowledged() {
+		@Override
+		public void onShowCaseAcknowledged(ShowcaseView showcaseView) {
+			setWebViewText(Constants.textExpression);
+			mWebViewExpr.reload();
+		}
+	});
+	sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.gestureOverlayView1,
+						R.string.gesture_area_title,
+				     		R.string.gesture_area_msg,
+				    		Constants.BIG_RADIUS_SCALE));
+	sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.exprTextView1,
+				     		R.string.output_area_title,
+				      		R.string.output_area_msg,
+				       		Constants.MID_RADIUS_SCALE));
+	sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.deleteButton1,
+				      		R.string.delete_button_title,
+				       		R.string.delete_button_msg,
+				        	Constants.RADIUS_SCALE));
+	sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.checkMarkButton1,
+				       		R.string.checkmark_button_title,
+				        	R.string.checkmark_button_msg,
+					 	Constants.RADIUS_SCALE));
+	sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.backspaceButton1,
+				        	R.string.backspace_button_title,
+					 	R.string.backspace_button_msg,
+					  	Constants.RADIUS_SCALE));
+	sViews.show();
+	/* Added by Sagar Parmar on 17th November for showcase view End */
+	
         mTitle = mDrawerTitle = getTitle();
         mListItemTitles = getResources().getStringArray(R.array.list_item_array);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -142,7 +182,11 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         
         mBackspaceButton = (ImageButton) findViewById(R.id.backspaceButton1);
         mBackspaceButton.setOnTouchListener(this);
-        
+       
+	  /* Modified by Sagar Parmar on 17th Nov
+	   * Note: Modified to show "Expression" text on showcaseview ack 
+	   * */
+
         mWebViewExpr = (WebView) findViewById(R.id.exprTextView1);
         mWebViewExpr.getSettings().setJavaScriptEnabled(true);
         mWebViewExpr.getSettings().setBuiltInZoomControls(false);
@@ -159,9 +203,8 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 							  +"});</script>"
 		                      +"<script type='text/javascript' "
 							  +"src='file:///android_asset/MathJax/MathJax.js'"
-							  +"></script><span id='math'>"+ Constants.textExpression +"</span></body>","text/html","utf-8","");
-        mWebViewExpr.reload();
-        mArrayListHistory = new ArrayList<String>();
+       							  +"></script><span id='math'></span></body>","text/html","utf-8","");
+	mArrayListHistory = new ArrayList<String>();
 
 	/*Added by Anirudh Subramanian on 17th November for Shake Support Start*/
 	
@@ -428,13 +471,14 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		catch (SyntaxException e) {
 			Log.d(Constants.appName,e.explain());
 
-    			/*Modified by Anirudh Subramanian on 17th November End*/
+    			/*Modified by Anirudh Subramanian on 17th November Begin*/
 			if(!bFromMemorize && !bFromXMemorize && !bFromYMemorize)
-				Toast.makeText(this, "Please check the expression!", Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, Constants.checkTheExpression, Toast.LENGTH_SHORT).show();
 			else {
 				if(bFromMemorize || bFromXMemorize || bFromYMemorize)
-					Toast.makeText(this, "The expression cannot be evaluated and so cannot be memorized!",Toast.LENGTH_SHORT).show();
+					Toast.makeText(this, Constants.checkTheExpression, Toast.LENGTH_SHORT).show();
 			}
+			/*Modified by Anirudh Subramanian on 17th November End*/
 			setWebViewText(Constants.textExpression);
 	        	mStrExpression = "";
 		}
@@ -472,7 +516,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		//if(variablesSet.get(inputString) == null) {
 			if(mXValue != null && !"".equals(mXValue)){
 				variablesSet.put(inputString, Double.parseDouble(mXValue));
-				Toast.makeText(this, "Value stored in memory for variable " + inputString, Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, Constants.valueFromVariable + inputString, Toast.LENGTH_SHORT).show();
 			}
 		//}
 	}
@@ -523,7 +567,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 					}
 				}
 				if(val != null && !"".equals(val)) {
-					Toast.makeText(this, "The constant is subtituted by " + val,Toast.LENGTH_SHORT).show();
+					Toast.makeText(this, Constants.constSubstBy + val,Toast.LENGTH_SHORT).show();
 					return val;
 				}
 				

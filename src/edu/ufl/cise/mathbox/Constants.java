@@ -43,7 +43,19 @@ public class Constants {
 	public static final ArrayList constantsList = new ArrayList();
 	public static final ArrayList variablesList = new ArrayList();
 	//Added by Anirudh Subramanian on 17th November (Memory) End
-	
+
+	//Added by Sagar Parmar on 17th November ShowCaseview start
+	public static final float RADIUS_SCALE = 0.35f;
+ 	public static final float BIG_RADIUS_SCALE = 1f;
+ 	public static final float MID_RADIUS_SCALE = 0.6f;
+ 	//Added by Sagar Parmar on 17th November ShowCaseview start
+	  
+	//Added by Sagar Parmar as constants 17th Nov start
+	public static final String checkTheExpression = "Please check the expression!";
+ 	public static final String cantBeMemorized = "The expression cannot be evaluated and so cannot be memorized!";
+	public static final String valueForVariable = "Value stored in memory for variable";
+	public static final String constSubstBy     = "The constant is substituted by";
+	//Added by Sagar Parmar as constants 17th Nov end 
 	
 	public static final HashMap<String,String> userReadableNames = new HashMap<String, String>();
 	
