@@ -1,7 +1,7 @@
 package edu.ufl.cise.mathbox;
 
 import java.util.ArrayList;
-
+import edu.ufl.cise.mathbox.ShakeEventListener;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -36,8 +36,23 @@ import expr.Expr;
 import expr.Parser;
 import expr.SyntaxException;
 
+/*Added by Anirudh Subramanian on 17th November Start*/
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.content.Context;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.text.DecimalFormat;
+/*Added by Anirudh Subramanian on 17th November End*/
+
 public class MathBoxActivity extends Activity implements OnGesturePerformedListener,OnTouchListener {
 
+	/*Added by Anirudh Subramanian on 17th November Start*/
+	private SensorManager mSensorManager;
+	private ShakeEventListener mSensorListener;
+	/*Added by Anirudh Subramanian on 17th November End*/
 	private ActionBarDrawerToggle mDrawerToggle;
 	private DrawerLayout mDrawerLayout;
 	private CharSequence mTitle;
@@ -51,20 +66,25 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     private boolean bExpressionEvaluated =  false;
     private String mStrExpression = "";
     /*Added by Anirudh Subramanian on 16th November Start*/
+
     private String mEvaluatedExpression = "";
     private boolean bExpressionMemorized = false;
     private String mMemorizedExpression = "";
     private boolean bFromMemorize = false;
+    private boolean bFromXMemorize = false;
+    private boolean bFromYMemorize = false; 
     /*Added by Anirudh Subramanian on 16th November End*/
     private ArrayList<String> mArrayListHistory = null;
     private ListView mDrawerList;
 	private String[] mListItemTitles;
+        private HashMap<String, Double> variablesSet = new HashMap<String, Double>();
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
 		// app initialization
 		Constants.initUserReadableNames();
-		
+		Constants.initVariableNames();
+		Constants.initConstantNames();	
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_math_box);
         
@@ -142,6 +162,20 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 							  +"></script><span id='math'>"+ Constants.textExpression +"</span></body>","text/html","utf-8","");
         mWebViewExpr.reload();
         mArrayListHistory = new ArrayList<String>();
+
+	/*Added by Anirudh Subramanian on 17th November for Shake Support Start*/
+	
+	mSensorManager  = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+	mSensorListener = new ShakeEventListener();
+        mSensorListener.setOnShakeListener(new ShakeEventListener.OnShakeListener(){
+			public void onShake() {
+				mStrExpression = "";
+				Toast.makeText(MathBoxActivity.this, "Expression cleared!", Toast.LENGTH_SHORT).show();
+				setWebViewText(mStrExpression);
+			}
+	});	
+	
+	/*Added by Anirudh Subramanian on 17th November for Shake Support End*/
     }
 
 
@@ -342,8 +376,21 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	else if(predicted.equals(Constants.retrieveMemory)) {
 		retrieveMemory();	
 	}
+	else if(predicted.equals(Constants.memorizeX)) {
+		bFromXMemorize = true;
+		evaluateExpression();
+		bFromXMemorize = false;
+		memorizeVariable("x");
+	}
+	else if(predicted.equals(Constants.memorizeY)) {
+		bFromYMemorize = true;
+		evaluateExpression();
+		bFromYMemorize = false;
+		memorizeVariable("y");	
+	}
 	/*Added by Anirudh Subramanian on 17th November for memory feature implementation End*/
     	else {
+		predicted = returnVariableOrConstant(predicted);
     		mStrExpression += predicted;
     	}
 		setWebViewText(mStrExpression);
@@ -371,20 +418,23 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 			}
 			
 			mStrExpression = mStrExpression + "=" +  mEvaluatedExpression;
-			setWebViewText(mStrExpression);
 			bExpressionEvaluated =  true;
 			mArrayListHistory.add(mStrExpression);
+			if(bFromMemorize || bFromXMemorize || bFromYMemorize)
+				mStrExpression = mEvaluatedExpression;
+			setWebViewText(mStrExpression);
     			/*Added by Anirudh Subramanian on 16th November End*/
 		}
 		catch (SyntaxException e) {
 			Log.d(Constants.appName,e.explain());
 
     			/*Modified by Anirudh Subramanian on 17th November End*/
-			if(!bFromMemorize)
+			if(!bFromMemorize && !bFromXMemorize && !bFromYMemorize)
 				Toast.makeText(this, "Please check the expression!", Toast.LENGTH_SHORT).show();
-			else
-				Toast.makeText(this, "The expression cannot be evaluated and so cannot be memorized!",Toast.LENGTH_SHORT).show();
-
+			else {
+				if(bFromMemorize || bFromXMemorize || bFromYMemorize)
+					Toast.makeText(this, "The expression cannot be evaluated and so cannot be memorized!",Toast.LENGTH_SHORT).show();
+			}
 			setWebViewText(Constants.textExpression);
 	        	mStrExpression = "";
 		}
@@ -396,6 +446,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	private void memorizeValue() {
 		mMemorizedExpression = mEvaluatedExpression;
 		bExpressionMemorized = true;
+		Toast.makeText(this, "Value stored in memory!", Toast.LENGTH_SHORT).show();
 	}
 
 	private void retrieveMemory() {
@@ -410,9 +461,106 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 
 
 	}
+	
+	private void memorizeVariable(String inputString) {
+		String mXValue = "";
+		if(mEvaluatedExpression != null && !"".equals(mEvaluatedExpression)) {
+			mXValue = mEvaluatedExpression;
+
+		}
+
+		//if(variablesSet.get(inputString) == null) {
+			if(mXValue != null && !"".equals(mXValue)){
+				variablesSet.put(inputString, Double.parseDouble(mXValue));
+				Toast.makeText(this, "Value stored in memory for variable " + inputString, Toast.LENGTH_SHORT).show();
+			}
+		//}
+	}
+	/*
+	private void retrieveX() {
+		if(!bXMemoried) {
+			 Toast.makeText(this,"Nothing in memory for X!",Toast.LENGTH_SHORT).show();
+			return;
+		}
+		else {
+			mStrExpression += mXValue;
+			bXMemoried = false;
+		}
+	}
+	}
+	*/
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_UI);
+
+	}
+
+	@Override
+	protected void onPause() {
+		mSensorManager.unregisterListener(mSensorListener);
+		super.onPause();
+	}
+	
    /*Added by Anirudh Subramanian on 17th November End*/ 
 
+   /*Added by Anirudh Subramanian Begin*/
+    /*Method to replace constants and variables with their values*/
+   	private String returnVariableOrConstant(String inputString) {
+		try{
+			if(Constants.constantsList.contains(inputString) ) {
+				Expr expr = Parser.parse(inputString);
+				Double exprValue = expr.value();
+				String val = "";
+				if(exprValue != null){
+					DecimalFormat df = new DecimalFormat("#.##");
+					exprValue = Double.parseDouble(df.format(exprValue));
+					if (( exprValue == Math.floor(exprValue)) && !Double.isInfinite(exprValue)) {
+						val = "" + exprValue.intValue();
+					} else {
+						val = "" + exprValue;
+					}
+				}
+				if(val != null && !"".equals(val)) {
+					Toast.makeText(this, "The constant is subtituted by " + val,Toast.LENGTH_SHORT).show();
+					return val;
+				}
+				
+				else {
+					return inputString;
+				}
+			}
+			else if(Constants.variablesList.contains(inputString)) {
+				Double exprValue = variablesSet.get(inputString);
+				String val = "";
+				if(exprValue != null){
+					DecimalFormat df = new DecimalFormat("#.##");
+					exprValue = Double.parseDouble(df.format(exprValue));
+					if (( exprValue == Math.floor(exprValue)) && !Double.isInfinite(exprValue)) {
+						val = "" + exprValue.intValue();
+					} else {
+						val = "" + exprValue;
+					}
+				}
+				if(val != null && !"".equals(val)) {
+					Toast.makeText(this, "The variable " + inputString + " is subtituted by " + val,Toast.LENGTH_SHORT).show();
+					return val;
+				}
+				else {
+					return inputString;
+				}
+			}
+			else {
+			}
+		}
+		catch (SyntaxException e) {
+			Toast.makeText(this, "Constant value cannot be evaluated!",Toast.LENGTH_SHORT).show();
+		}
+		return inputString;
+	} 
 
+   /*Added by Anirudh Subramanian End*/
 	
 	private void handleBackspace() {
 		if(mStrExpression.length() >= 2 && !bExpressionEvaluated) {
@@ -427,7 +575,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	
 	private void clearCanvas() {
 		setWebViewText(Constants.textExpression);
-        mStrExpression = "";
+        	mStrExpression = "";
 		mGestureOverlayView.cancelClearAnimation();
 		mGestureOverlayView.clear(true);
 	}

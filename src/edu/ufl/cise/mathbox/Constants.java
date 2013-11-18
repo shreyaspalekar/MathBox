@@ -1,6 +1,7 @@
 package edu.ufl.cise.mathbox;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Constants {
 	//Constants
@@ -35,6 +36,12 @@ public class Constants {
 	//Added by Anirudh Subramanian on 17th November (Memory) Start
 	public static final String memorize = "m";
 	public static final String retrieveMemory = "r";
+	public static final String memorizeX = "saveX";
+	public static final String retrieveX = "x";
+	public static final String memorizeY = "saveY";
+	public static final String retrieveY = "y";
+	public static final ArrayList constantsList = new ArrayList();
+	public static final ArrayList variablesList = new ArrayList();
 	//Added by Anirudh Subramanian on 17th November (Memory) End
 	
 	
@@ -47,12 +54,30 @@ public class Constants {
 		public static final String pi = "\u03C0";
 		public static final String sigma = "\u03A3";
 	}
-	
+	//Added by Anirudh Subramanian on 17th November Begin
+	public class constantNames {
+		public static final String pi = "pi";
+	}
+
+	public class variableNames {
+		public static final String x = "x";
+		public static final String y = "y";
+	}
+	//Added by Anirudh Subramanian on 17th November End
+
 	static void initUserReadableNames() {
 		userReadableNames.put(backspace, UserReadableNames.backspace);
 		userReadableNames.put(clear, UserReadableNames.clear);
 		userReadableNames.put(checkmark, UserReadableNames.checkmark);
 		userReadableNames.put(pi, UserReadableNames.pi);
 		userReadableNames.put(sigma, UserReadableNames.sigma);
+	}
+
+	static void initVariableNames() {
+		variablesList.add(variableNames.x);
+		variablesList.add(variableNames.y);
+	}
+	static void initConstantNames() {
+		constantsList.add(constantNames.pi);
 	}
 }
