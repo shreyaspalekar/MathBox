@@ -47,6 +47,7 @@ public class Constants {
 	//Added by Sagar Parmar as constants 17th Nov start
 	public static final String checkTheExpression = "Please check the expression!";
 	public static final String cantBeMemorized = "The expression cannot be evaluated and so cannot be memorized!";
+	public static final String tutOnLaunch = "tutorialOnLaunch";
 	//Added by Sagar Parmar as constants 17th Nov end
 	
 	public static final HashMap<String,String> userReadableNames = new HashMap<String, String>();

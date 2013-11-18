@@ -1,13 +1,17 @@
 package edu.ufl.cise.mathbox;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
-
-import com.espian.showcaseview.ShowcaseView;
-import com.espian.showcaseview.ShowcaseViews;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.gesture.Gesture;
 import android.gesture.GestureLibraries;
@@ -16,7 +20,10 @@ import android.gesture.GestureOverlayView;
 import android.gesture.GestureOverlayView.OnGesturePerformedListener;
 import android.gesture.GestureStore;
 import android.gesture.Prediction;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -35,6 +42,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.espian.showcaseview.ShowcaseView;
+import com.espian.showcaseview.ShowcaseViews;
+
 import expr.Expr;
 import expr.Parser;
 import expr.SyntaxException;
@@ -64,8 +75,12 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	private String[] mListItemTitles;
 
 	/* Added by Sagar Parmar on 17th November Start */
-	ShowcaseViews sViews;
-    ShowcaseView.ConfigOptions svOptions = new ShowcaseView.ConfigOptions();
+	private ShowcaseViews sViews;
+    private ShowcaseView.ConfigOptions svOptions = new ShowcaseView.ConfigOptions();
+    //For saving screenshot
+	private String mPath = Environment.getExternalStorageDirectory().toString() + "/" + "mathbox_screenshot";
+	private static final String PREFS_NAME = "MathBoxPrefFile";
+	private boolean bShowTutorialOnLaunch = true;
     /* Added by Sagar Parmar on 17th November End*/
     
 	@Override
@@ -75,38 +90,45 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_math_box);
+
+        /* Added by Sagar Parmar on 17th November for showcase view Start */
+        // Restore preferences
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        bShowTutorialOnLaunch = settings.getBoolean(Constants.tutOnLaunch, true);
         
-    	/* Added by Sagar Parmar on 17th November for showcase view Start */
-        svOptions.hideOnClickOutside = false;
-		svOptions.block = false;
-		sViews = new ShowcaseViews(this,new ShowcaseViews.OnShowcaseAcknowledged() {
-            @Override
-            public void onShowCaseAcknowledged(ShowcaseView showcaseView) {
-            	setWebViewText(Constants.textExpression);
-            	mWebViewExpr.reload();
-            }
-        });
-		sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.gestureOverlayView1,
-                R.string.gesture_area_title,
-                R.string.gesture_area_msg,
-                Constants.BIG_RADIUS_SCALE));
-		sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.exprTextView1,
-                R.string.output_area_title,
-                R.string.output_area_msg,
-                Constants.MID_RADIUS_SCALE));
-        sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.deleteButton1,
-                R.string.delete_button_title,
-                R.string.delete_button_msg,
-                Constants.RADIUS_SCALE));
-        sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.checkMarkButton1,
-                R.string.checkmark_button_title,
-                R.string.checkmark_button_msg,
-                Constants.RADIUS_SCALE));
-        sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.backspaceButton1,
-                R.string.backspace_button_title,
-                R.string.backspace_button_msg,
-                Constants.RADIUS_SCALE));
-        sViews.show();
+        if(bShowTutorialOnLaunch) {
+	        svOptions.hideOnClickOutside = false;
+			svOptions.block = false;
+			sViews = new ShowcaseViews(this,new ShowcaseViews.OnShowcaseAcknowledged() {
+	            @Override
+	            public void onShowCaseAcknowledged(ShowcaseView showcaseView) {
+	            	showTutorialAlertDialog();
+	            	setWebViewText(Constants.textExpression);
+	            	mWebViewExpr.reload();
+	            }
+	        });
+			sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.gestureOverlayView1,
+	                R.string.gesture_area_title,
+	                R.string.gesture_area_msg,
+	                Constants.BIG_RADIUS_SCALE));
+			sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.exprTextView1,
+	                R.string.output_area_title,
+	                R.string.output_area_msg,
+	                Constants.MID_RADIUS_SCALE));
+	        sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.deleteButton1,
+	                R.string.delete_button_title,
+	                R.string.delete_button_msg,
+	                Constants.RADIUS_SCALE));
+	        sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.checkMarkButton1,
+	                R.string.checkmark_button_title,
+	                R.string.checkmark_button_msg,
+	                Constants.RADIUS_SCALE));
+	        sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.backspaceButton1,
+	                R.string.backspace_button_title,
+	                R.string.backspace_button_msg,
+	                Constants.RADIUS_SCALE));
+	        sViews.show();
+        }
         /* Added by Sagar Parmar on 17th November for showcase view End */
         
         mTitle = mDrawerTitle = getTitle();
@@ -189,27 +211,91 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     }
 
 
+	private void showTutorialAlertDialog() {
+		new AlertDialog.Builder(this).setTitle("Tutorial")
+    	.setMessage("Show this tutorial on launch?")
+        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {          
+            	bShowTutorialOnLaunch = true;
+            }
+        })
+        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+            	bShowTutorialOnLaunch = false;
+            }
+        })
+        .show();	
+	}
+	
+	@Override
+    protected void onStop(){
+       super.onStop();
+
+      // We need an Editor object to make preference changes.
+      // All objects are from android.context.Context
+      SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+      SharedPreferences.Editor editor = settings.edit();
+      editor.putBoolean(Constants.tutOnLaunch, bShowTutorialOnLaunch);
+
+      // Commit the edits!
+      editor.commit();
+    }
+	
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.math_box, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu); 
+    }
+    
+    private void prepareImage() {
+    	// create bitmap screen capture
+    	if(mWebViewExpr != null) {
+	    	Bitmap bitmap = null;
+	    	mWebViewExpr.setDrawingCacheEnabled(true);
+	    	bitmap = Bitmap.createBitmap(mWebViewExpr.getDrawingCache());
+	    	mWebViewExpr.setDrawingCacheEnabled(false);
+	
+	    	OutputStream fout = null;
+	    	File imageFile = new File(mPath);
+	
+	    	try {
+	    	    fout = new FileOutputStream(imageFile);
+	    	    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fout);
+	    	    fout.flush();
+	    	    fout.close();
+	    	} catch (FileNotFoundException e) {
+	    	    e.printStackTrace();
+	    	} catch (IOException e) {
+	    	    e.printStackTrace();
+	    	}
+    	}
     }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
+    	Log.d(Constants.appName, "On options items selected called");
         if (mDrawerToggle.onOptionsItemSelected(item)) {
+        	Log.d(Constants.appName, "DrawerToggel item");
           return true;
         }
-        // Handle your other action bar items...
+        
+		// Handle your other action bar items...
         // Handle item selection
         switch (item.getItemId()) {
 	        case R.id.action_share:
 	        	Log.d(Constants.appName,"Share");
+	        	prepareImage();
+	            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+	    		shareIntent.setType("image/*");
+	    		shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(mPath)));
+	    		startActivity(Intent.createChooser(shareIntent, "Share Expression"));
 	            return true;
 	        case R.id.action_settings:
+	        	Log.d(Constants.appName,"Settings selected");
+	        	showTutorialAlertDialog();
 	            return true;
         }
         return super.onOptionsItemSelected(item);
@@ -273,7 +359,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     		/*Added by Anirudh Subramanian on 16th November Start*/
     		mStrExpression = mEvaluatedExpression;	//setting the value of expression to the evaluated expression	
     		/*Added by Anirudh Subramanian on 16th November End*/
-		setWebViewText(mStrExpression);
+    		setWebViewText(mStrExpression);
     	}
     	arrListPredictions = Recognizer.recognizeGesture(predictions, gesture);
     	if(arrListPredictions.size() != 0) {
@@ -291,7 +377,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     			}
     			predictionsArr[arrListPredictions.size()] = Constants.neverMind; 
     					
-    			AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, android.R.style.Theme_Black));
+    			AlertDialog.Builder builder = new AlertDialog.Builder(this);
         	    builder.setTitle(R.string.reco_pop);
         	    builder.setItems(predictionsArr, new DialogInterface.OnClickListener() {
         	    	public void onClick(DialogInterface dialog, int which) {
