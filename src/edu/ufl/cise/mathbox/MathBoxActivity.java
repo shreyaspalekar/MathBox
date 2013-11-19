@@ -5,10 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
-import edu.ufl.cise.mathbox.ShakeEventListener;
+import java.util.HashMap;
+
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,14 +24,16 @@ import android.gesture.GestureOverlayView.OnGesturePerformedListener;
 import android.gesture.GestureStore;
 import android.gesture.Prediction;
 import android.graphics.Bitmap;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -49,16 +54,7 @@ import com.espian.showcaseview.ShowcaseViews;
 import expr.Expr;
 import expr.Parser;
 import expr.SyntaxException;
-
 /*Added by Anirudh Subramanian on 17th November Start*/
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.content.Context;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.text.DecimalFormat;
 /*Added by Anirudh Subramanian on 17th November End*/
 
 public class MathBoxActivity extends Activity implements OnGesturePerformedListener,OnTouchListener {
@@ -111,7 +107,12 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	Constants.initConstantNames();	
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_math_box);
-
+        
+        Log.d(Constants.TAG,"on create called");
+        if(savedInstanceState == null)
+        	mStrExpression = "";
+        else
+        	mStrExpression = savedInstanceState.getString("savedExpression");
         /* Added by Sagar Parmar on 17th November for showcase view Start */
         // Restore preferences
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
@@ -123,9 +124,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 			sViews = new ShowcaseViews(this,new ShowcaseViews.OnShowcaseAcknowledged() {
 	            @Override
 	            public void onShowCaseAcknowledged(ShowcaseView showcaseView) {
-	            	showTutorialAlertDialog();
-	            	setWebViewText(Constants.textExpression);
-	            	mWebViewExpr.reload();
+	            	showTutorialAlertDialog("Tutorial","Show this tutorial on launch?");
 	            }
 	        });
 			sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.gestureOverlayView1,
@@ -219,20 +218,8 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         mWebViewExpr = (WebView) findViewById(R.id.exprTextView1);
         mWebViewExpr.getSettings().setJavaScriptEnabled(true);
         mWebViewExpr.getSettings().setBuiltInZoomControls(false);
-        mWebViewExpr.loadDataWithBaseURL("http://bar", "<body bgcolor=\"#ffffff\"><script type='text/x-mathjax-config'>"
-		                      +"MathJax.Hub.Config({ " 
-							  	+"showMathMenu: false,"
-							  	+"jax: ['input/TeX','output/HTML-CSS'], "
-							  	+"extensions: ['tex2jax.js'], " 
-							  	+"TeX: { extensions: ['AMSmath.js','AMSsymbols.js',"
-							  	  +"'noErrors.js','noUndefined.js'] }, "
-							  	+"showProcessingMessages: false,"
-							  	+ "displayAlign: \"left\", "
-							  	+ "\"HTML-CSS\": { scale: 130}"
-							  +"});</script>"
-		                      +"<script type='text/javascript' "
-							  +"src='file:///android_asset/MathJax/MathJax.js'"
-       							  +"></script><span id='math'></span></body>","text/html","utf-8","");
+        //Moved part of loading url to onResume
+        
 	mArrayListHistory = new ArrayList<String>();
 
 	/*Added by Anirudh Subramanian on 17th November for Shake Support Start*/
@@ -243,7 +230,8 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 			public void onShake() {
 				mStrExpression = "";
 				Toast.makeText(MathBoxActivity.this, "Expression cleared!", Toast.LENGTH_SHORT).show();
-				setWebViewText(mStrExpression);
+				//Modified by Sagar - 18th Nov
+				setWebViewText(Constants.textExpression);
 			}
 	});	
 	
@@ -251,10 +239,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         
     }
 
-
-	private void showTutorialAlertDialog() {
-		new AlertDialog.Builder(this).setTitle("Tutorial")
-    	.setMessage("Show this tutorial on launch?")
+	/* Sagar: Changed method signature on 18th nov */
+	private void showTutorialAlertDialog(String title, String msg) {
+		new AlertDialog.Builder(this).setTitle(title)
+    	.setMessage(msg)
         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {          
             	bShowTutorialOnLaunch = true;
@@ -317,16 +305,13 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     public boolean onOptionsItemSelected(MenuItem item) {
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
-    	Log.d(Constants.appName, "On options items selected called");
         if (mDrawerToggle.onOptionsItemSelected(item)) {
-        	Log.d(Constants.appName, "DrawerToggel item");
           return true;
         }
         
         // Handle item selection
         switch (item.getItemId()) {
 	        case R.id.action_share:
-	        	Log.d(Constants.appName,"Share");
 	        	prepareImage();
 	            Intent shareIntent = new Intent(Intent.ACTION_SEND);
 	    		shareIntent.setType("image/*");
@@ -334,8 +319,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	    		startActivity(Intent.createChooser(shareIntent, "Share Expression"));
 	            return true;
 	        case R.id.action_settings:
-	        	Log.d(Constants.appName,"Settings selected");
-	        	showTutorialAlertDialog();
+	        	showTutorialAlertDialog("Tutorial","Show tutorial on launch?");
 	            return true;
         }
         return super.onOptionsItemSelected(item);
@@ -352,15 +336,42 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     private void selectItem(int position) {
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(position, true);
-        Log.d(Constants.appName,"Item at pos " + position + " clicked");
         switch(position) {
         	case 0:
         		for(String historyItem:mArrayListHistory)
-        			Log.d(Constants.appName,historyItem);
+        			Log.d(Constants.TAG,historyItem);
+        		mDrawerList.setItemChecked(position, false);
+        		mDrawerLayout.closeDrawer(mDrawerList);
+        		break;
+        	case 1:
+                mDrawerList.setItemChecked(position, false);
+        		mDrawerLayout.closeDrawer(mDrawerList);
+        		startActivity(new Intent(this,HelpActivity.class));
+        		break;
+        	case 2:
+        		mDrawerList.setItemChecked(position, false);
+        		mDrawerLayout.closeDrawer(mDrawerList);
+        		WebView webView = new WebView(this);
+        	    webView.loadUrl("file:///android_asset/aboutus.html");
+        	    AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        	    dialog.setView(webView);
+        	    dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        	        public void onClick(DialogInterface dialog, int which) {
+        	            dialog.dismiss();
+        	        }
+        	    });
+        	    dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        	        public void onClick(DialogInterface dialog, int which) {
+        	            dialog.dismiss();
+        	        }
+        	    });
+        	    dialog.show();
+        		break;
         	default:
+        		mDrawerList.setItemChecked(position, false);
+        		mDrawerLayout.closeDrawer(mDrawerList);
+        		break;
         }
-        mDrawerLayout.closeDrawer(mDrawerList);
-        mDrawerList.setItemChecked(position, false);
     }
     
     @Override
@@ -440,7 +451,6 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 			mWebViewExpr.startAnimation(shake);
 			Toast.makeText(this, "Couldn't recognize the symbol!", Toast.LENGTH_SHORT).show();
 		}
-    	Log.d(Constants.appName, "mStrExpression = " + mStrExpression);
     }
     
     @Override
@@ -529,13 +539,14 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		predicted = returnVariableOrConstant(predicted);
     		mStrExpression += predicted;
     	}
-		setWebViewText(mStrExpression);
+    	if(mStrExpression.length() != 0)
+    		setWebViewText(mStrExpression);
     }
     
     private void evaluateExpression() {
     	//Evaluate expression
 		try {
-			Log.d(Constants.appName, "Going to evaluate:\"" + mStrExpression + "\"");
+			Log.d(Constants.TAG, "Going to evaluate:\"" + mStrExpression + "\"");
 			//Calculable calc = new ExpressionBuilder(mStrExpression).build();
 			Expr expr = Parser.parse(mStrExpression); 
 			/*Commented by Anirudh Subramanian on 16th November Start*/
@@ -562,7 +573,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     			/*Added by Anirudh Subramanian on 16th November End*/
 		}
 		catch (SyntaxException e) {
-			Log.d(Constants.appName,e.explain());
+			Log.d(Constants.TAG,e.explain());
 
     			/*Modified by Anirudh Subramanian on 17th November Begin*/
 			if(!bFromMemorize && !bFromXMemorize && !bFromYMemorize)
@@ -637,7 +648,33 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	
 	@Override
 	protected void onResume() {
+		Log.d(Constants.TAG,"On resume called");
 		super.onResume();
+		mWebViewExpr.loadDataWithBaseURL("http://bar", "<body bgcolor=\"#ffffff\"><script type='text/x-mathjax-config'>"
+                +"MathJax.Hub.Config({ " 
+				  	+"showMathMenu: false,"
+				  	+"jax: ['input/TeX','output/HTML-CSS'], "
+				  	+"extensions: ['tex2jax.js'], " 
+				  	+"TeX: { extensions: ['AMSmath.js','AMSsymbols.js',"
+				  	  +"'noErrors.js','noUndefined.js'] }, "
+				  	+"showProcessingMessages: false,"
+				  	+ "displayAlign: \"left\", "
+				  	+ "\"HTML-CSS\": { scale: 130}"
+				  +"});</script>"
+                +"<script type='text/javascript' "
+				  +"src='file:///android_asset/MathJax/MathJax.js'"
+						  +"></script><span id='math'></span></body>","text/html","utf-8",null);
+		final Handler handler = new Handler();
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				//Do something after 100ms
+				if(mStrExpression.length() != 0)
+					setWebViewText(mStrExpression);
+				else
+					setWebViewText(Constants.textExpression);
+			}
+		}, 100);
 		mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_UI);
 
 	}
@@ -662,9 +699,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 					DecimalFormat df = new DecimalFormat("#.##");
 					exprValue = Double.parseDouble(df.format(exprValue));
 					if (( exprValue == Math.floor(exprValue)) && !Double.isInfinite(exprValue)) {
-						val = "" + exprValue.intValue();
+						// Modified by sagar to replace "pi" by "*pi"
+						val = "*" + exprValue.intValue();
 					} else {
-						val = "" + exprValue;
+						val = "*" + exprValue;
 					}
 				}
 				if(val != null && !"".equals(val)) {
@@ -714,13 +752,14 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		}
 		else {
 			mStrExpression = "";
-	        setWebViewText(Constants.textExpression);
+	        setWebViewText(mEvaluatedExpression);
 		}
 	}
 	
 	private void clearCanvas() {
 		setWebViewText(Constants.textExpression);
         	mStrExpression = "";
+        	mEvaluatedExpression = "";
 		mGestureOverlayView.cancelClearAnimation();
 		mGestureOverlayView.clear(true);
 	}
@@ -745,5 +784,18 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 			           +doubleEscapeTeX(s)+"\\\\]';");
 			mWebViewExpr.loadUrl("javascript:MathJax.Hub.Queue(['Typeset',MathJax.Hub]);");
 		}
+	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		Log.i(Constants.TAG, "onSaveInstanceState");
+		outState.putString("savedExpression", mStrExpression);
+	}
+	
+	@Override
+	protected void onRestoreInstanceState(Bundle savedState) {		
+		Log.i(Constants.TAG, "onRestoreInstanceState");
+		mStrExpression = savedState.getString("savedExpression", "");
 	}
 }

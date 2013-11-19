@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Constants {
 	//Constants
-	public static final String appName = "MathBox";
+	public static final String TAG = "MathBox";
 	public static final String textExpression = "Expression";
 	public static final String neverMind = "Never mind!";
 	
@@ -40,8 +40,8 @@ public class Constants {
 	public static final String retrieveX = "x";
 	public static final String memorizeY = "saveY";
 	public static final String retrieveY = "y";
-	public static final ArrayList constantsList = new ArrayList();
-	public static final ArrayList variablesList = new ArrayList();
+	public static final ArrayList<String> constantsList = new ArrayList<String>();
+	public static final ArrayList<String> variablesList = new ArrayList<String>();
 	//Added by Anirudh Subramanian on 17th November (Memory) End
 
 	//Added by Sagar Parmar on 17th November ShowCaseview start
@@ -54,7 +54,7 @@ public class Constants {
 	public static final String checkTheExpression = "Please check the expression!";
  	public static final String cantBeMemorized = "The expression cannot be evaluated and so cannot be memorized!";
 	public static final String valueForVariable = "Value stored in memory for variable";
-	public static final String constSubstBy     = "The constant is substituted by";
+	public static final String constSubstBy     = "The constant is substituted by ";
 	public static final String tutOnLaunch = "tutorialOnLaunch";
 	//Added by Sagar Parmar as constants 17th Nov end 
 	

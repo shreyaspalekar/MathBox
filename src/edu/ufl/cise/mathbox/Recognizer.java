@@ -17,7 +17,7 @@ public class Recognizer {
     	
     	String tempPrediction = predictions.get(0).toString();
     	predictionScore = predictions.get(0).score;
-    	Log.d(Constants.appName, "All predictions = " + predictions);
+    	Log.d(Constants.TAG, "All predictions = " + predictions);
     	
     	//Filter based on numOfStrokes
     	int numOfStroke = gesture.getStrokesCount();
@@ -27,33 +27,33 @@ public class Recognizer {
     		
         	if(tempPrediction.equals(Constants.minus) || tempPrediction.equals(Constants.divideBy) 
         			|| tempPrediction.equals(Constants.equalTo) ) {
-        		Log.d(Constants.appName, "inside - / or = " + numOfStroke);
+        		Log.d(Constants.TAG, "inside - / or = " + numOfStroke);
         		if (numOfStroke == 2)
         			tempPrediction = Constants.equalTo;
         	}
         	
         	else if(tempPrediction.equals(Constants.plus) || tempPrediction.equals(Constants.asterik)) {
-        		Log.d(Constants.appName, "inside plus or star and numstroke=" + numOfStroke);
+        		Log.d(Constants.TAG, "inside plus or star and numstroke=" + numOfStroke);
         		if (numOfStroke == 2)
         			tempPrediction = Constants.plus;
         		else if(numOfStroke == 4)
         			tempPrediction = Constants.asterik;
         	}
         	else if(tempPrediction.equals(Constants.zero) || tempPrediction.equals(Constants.decimal)) {
-        		Log.d(Constants.appName, "inside zero/decimal and length=" + length);
+        		Log.d(Constants.TAG, "inside zero/decimal and length=" + length);
         		if (length < Constants.decimalGestureLength)
         			tempPrediction = Constants.decimal;
         		else 
         			tempPrediction = Constants.zero;
         	}
         	else if(tempPrediction.equals(Constants.backspace) || tempPrediction.equals(Constants.four)) {
-        		Log.d(Constants.appName, "inside backspace or four and numstroke=" + numOfStroke);
+        		Log.d(Constants.TAG, "inside backspace or four and numstroke=" + numOfStroke);
         		if (numOfStroke == 1)
         			tempPrediction = Constants.backspace;
         		else if(numOfStroke == 2)
         			tempPrediction = Constants.four;
         	}
-        	Log.d(Constants.appName, "Recognized = " + tempPrediction + " Score = " + predictionScore);
+        	Log.d(Constants.TAG, "Recognized = " + tempPrediction + " Score = " + predictionScore);
         	strCurrentPrediction.add(tempPrediction);
     	}
     	else if(predictionScore > 1.60){
