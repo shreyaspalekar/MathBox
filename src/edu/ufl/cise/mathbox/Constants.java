@@ -16,6 +16,7 @@ public class Constants {
 	public static final String clear = "clear";
 	public static final String checkmark = "checkmark";
 	public static final String equalTo = "=";
+	public static final String help = "help";
 	//Gesture string ends
 	
 	//Arithmetic Symbols start
@@ -66,6 +67,7 @@ public class Constants {
 		public static final String checkmark = "\u2713";
 		public static final String pi = "\u03C0";
 		public static final String sigma = "\u03A3";
+		public static final String help = "Help";
 	}
 	//Added by Anirudh Subramanian on 17th November Begin
 	public class constantNames {
@@ -84,6 +86,7 @@ public class Constants {
 		userReadableNames.put(checkmark, UserReadableNames.checkmark);
 		userReadableNames.put(pi, UserReadableNames.pi);
 		userReadableNames.put(sigma, UserReadableNames.sigma);
+		userReadableNames.put(help, UserReadableNames.help);
 	}
 
 	static void initVariableNames() {

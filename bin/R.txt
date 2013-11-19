@@ -55,6 +55,7 @@ int raw gestures_10_8_23_09 0x7f050005
 int raw gestures_10_9_13_14 0x7f050006
 int raw gestures_11_15_12_07 0x7f050007
 int raw gestures_11_15_16_52_with_0 0x7f050008
+int raw gestures_11_19_11_52 0x7f050009
 int string action_settings 0x7f070003
 int string action_share 0x7f070002
 int string app_name 0x7f070001

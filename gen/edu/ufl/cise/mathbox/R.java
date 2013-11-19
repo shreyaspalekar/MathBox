@@ -131,6 +131,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int gestures_10_9_13_14=0x7f050006;
         public static final int gestures_11_15_12_07=0x7f050007;
         public static final int gestures_11_15_16_52_with_0=0x7f050008;
+        public static final int gestures_11_19_11_52=0x7f050009;
     }
     public static final class string {
         public static final int action_settings=0x7f070003;

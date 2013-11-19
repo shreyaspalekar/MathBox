@@ -28,16 +28,16 @@ public class Recognizer {
         	if(tempPrediction.equals(Constants.minus) || tempPrediction.equals(Constants.divideBy) 
         			|| tempPrediction.equals(Constants.equalTo) ) {
         		Log.d(Constants.TAG, "inside - / or = " + numOfStroke);
-        		if (numOfStroke == 2)
+        		if (numOfStroke == 1)
+        			tempPrediction = Constants.minus;
+        		else if (numOfStroke == 2)
         			tempPrediction = Constants.equalTo;
         	}
         	
         	else if(tempPrediction.equals(Constants.plus) || tempPrediction.equals(Constants.asterik)) {
-        		Log.d(Constants.TAG, "inside plus or star and numstroke=" + numOfStroke);
+        		Log.d(Constants.TAG, "inside plus,star,help and numstroke=" + numOfStroke);
         		if (numOfStroke == 2)
         			tempPrediction = Constants.plus;
-        		else if(numOfStroke == 4)
-        			tempPrediction = Constants.asterik;
         	}
         	else if(tempPrediction.equals(Constants.zero) || tempPrediction.equals(Constants.decimal)) {
         		Log.d(Constants.TAG, "inside zero/decimal and length=" + length);
@@ -52,6 +52,12 @@ public class Recognizer {
         			tempPrediction = Constants.backspace;
         		else if(numOfStroke == 2)
         			tempPrediction = Constants.four;
+        	}
+        	/* Added code for "help" gesture */
+        	else if(tempPrediction.equals(Constants.help)) {
+        		/* pick the next prediction because numstrokes != 2 */
+        		if(numOfStroke != 2)
+        			tempPrediction = predictions.get(1).toString();
         	}
         	Log.d(Constants.TAG, "Recognized = " + tempPrediction + " Score = " + predictionScore);
         	strCurrentPrediction.add(tempPrediction);

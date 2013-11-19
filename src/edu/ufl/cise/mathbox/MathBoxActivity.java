@@ -125,6 +125,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	            @Override
 	            public void onShowCaseAcknowledged(ShowcaseView showcaseView) {
 	            	showTutorialAlertDialog("Tutorial","Show this tutorial on launch?");
+	            	if(mStrExpression.length() != 0)
+						setWebViewText(mStrExpression);
+					else
+						setWebViewText(Constants.textExpression);
 	            }
 	        });
 			sViews.addView( new ShowcaseViews.ItemViewProperties(R.id.gestureOverlayView1,
@@ -193,7 +197,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         
         mGestureLibrary = GestureLibraries.fromRawResource(this,R.raw.gestures);
         mGestureLibrary.setOrientationStyle(8);
-        mGestureLibrary.setSequenceType(GestureStore.SEQUENCE_SENSITIVE);
+        mGestureLibrary.setSequenceType(GestureStore.SEQUENCE_INVARIANT);
         if (!mGestureLibrary.load()) 
             finish();
         
@@ -356,11 +360,6 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         	    AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         	    dialog.setView(webView);
         	    dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-        	        public void onClick(DialogInterface dialog, int which) {
-        	            dialog.dismiss();
-        	        }
-        	    });
-        	    dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
         	        public void onClick(DialogInterface dialog, int which) {
         	            dialog.dismiss();
         	        }
@@ -534,6 +533,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		bFromYMemorize = false;
 		memorizeVariable("y");	
 	}
+	else if(predicted.equals(Constants.help)) {
+		startActivity(new Intent(this,HelpActivity.class));
+	}	
 	/*Added by Anirudh Subramanian on 17th November for memory feature implementation End*/
     	else {
 		predicted = returnVariableOrConstant(predicted);
@@ -543,7 +545,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     		setWebViewText(mStrExpression);
     }
     
-    private void evaluateExpression() {
+	private void evaluateExpression() {
     	//Evaluate expression
 		try {
 			Log.d(Constants.TAG, "Going to evaluate:\"" + mStrExpression + "\"");
@@ -659,6 +661,7 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 				  	  +"'noErrors.js','noUndefined.js'] }, "
 				  	+"showProcessingMessages: false,"
 				  	+ "displayAlign: \"left\", "
+				  	+ "messageStyle: \"none\", "
 				  	+ "\"HTML-CSS\": { scale: 130}"
 				  +"});</script>"
                 +"<script type='text/javascript' "
@@ -671,6 +674,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 				//Do something after 100ms
 				if(mStrExpression.length() != 0)
 					setWebViewText(mStrExpression);
+				else if(bShowTutorialOnLaunch)
+					/* Need to show blank in webview when tutorial is showing */
+					setWebViewText("");
 				else
 					setWebViewText(Constants.textExpression);
 			}
@@ -699,10 +705,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 					DecimalFormat df = new DecimalFormat("#.##");
 					exprValue = Double.parseDouble(df.format(exprValue));
 					if (( exprValue == Math.floor(exprValue)) && !Double.isInfinite(exprValue)) {
-						// Modified by sagar to replace "pi" by "*pi"
-						val = "*" + exprValue.intValue();
+						val = "" + exprValue.intValue();
 					} else {
-						val = "*" + exprValue;
+						val = "" + exprValue;
 					}
 				}
 				if(val != null && !"".equals(val)) {
