@@ -754,10 +754,12 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		if(mStrExpression.length() >= 2 && !bExpressionEvaluated) {
 			mStrExpression = mStrExpression.substring(0, mStrExpression.length()-1);
 			setWebViewText(mStrExpression);
+			Log.d(Constants.TAG,"Setting webview to = " + mStrExpression + " bExpressionEvaluated = " + bExpressionEvaluated);
 		}
 		else {
 			mStrExpression = "";
-	        setWebViewText(mEvaluatedExpression);
+			mEvaluatedExpression = "";
+	        setWebViewText(Constants.textExpression);
 		}
 	}
 	

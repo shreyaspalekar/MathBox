@@ -23,7 +23,7 @@ public class Recognizer {
     	int numOfStroke = gesture.getStrokesCount();
     	//Length is used to differnciate between 0 & decimal
     	float length = gesture.getLength();
-    	if(predictionScore > 3.00) {
+    	if(predictionScore > 35.00) {
     		
         	if(tempPrediction.equals(Constants.minus) || tempPrediction.equals(Constants.divideBy) 
         			|| tempPrediction.equals(Constants.equalTo) ) {
