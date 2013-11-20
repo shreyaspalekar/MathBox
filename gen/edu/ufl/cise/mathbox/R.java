@@ -123,15 +123,10 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
     }
     public static final class raw {
         public static final int gestures=0x7f050000;
-        public static final int gestures_10_10_12_03=0x7f050001;
-        public static final int gestures_10_10_21_29=0x7f050002;
-        public static final int gestures_10_6_22_06=0x7f050003;
-        public static final int gestures_10_7_2_36=0x7f050004;
-        public static final int gestures_10_8_23_09=0x7f050005;
-        public static final int gestures_10_9_13_14=0x7f050006;
-        public static final int gestures_11_15_12_07=0x7f050007;
-        public static final int gestures_11_15_16_52_with_0=0x7f050008;
-        public static final int gestures_11_19_11_52=0x7f050009;
+        public static final int gestures_11_15_12_07=0x7f050001;
+        public static final int gestures_11_15_16_52_with_0=0x7f050002;
+        public static final int gestures_11_19_11_52=0x7f050003;
+        public static final int gestures_11_20_15_50=0x7f050004;
     }
     public static final class string {
         public static final int action_settings=0x7f070003;
