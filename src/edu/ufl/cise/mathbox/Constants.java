@@ -27,6 +27,7 @@ public class Constants {
 	public static final String zero = "0";
 	public static final String decimal = ".";
 	public static final String four = "4";
+	public static final String one = "1";
 	//Arithmetic Symbols end
 	
 	//Special symbols start

@@ -127,6 +127,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int gestures_11_15_16_52_with_0=0x7f050002;
         public static final int gestures_11_19_11_52=0x7f050003;
         public static final int gestures_11_20_15_50=0x7f050004;
+        public static final int gestures_11_21_12_27=0x7f050005;
     }
     public static final class string {
         public static final int action_settings=0x7f070003;

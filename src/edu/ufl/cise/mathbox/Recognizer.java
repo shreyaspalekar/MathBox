@@ -59,6 +59,11 @@ public class Recognizer {
         		if(numOfStroke != 2)
         			tempPrediction = predictions.get(1).toString();
         	}
+        	else if(tempPrediction.equals(Constants.one)) {
+        		/* pick the next prediction because numstrokes != 2 */
+        		if(numOfStroke != 1)
+        			tempPrediction = predictions.get(1).toString();
+        	}
         	Log.d(Constants.TAG, "Recognized = " + tempPrediction + " Score = " + predictionScore);
         	strCurrentPrediction.add(tempPrediction);
     	}

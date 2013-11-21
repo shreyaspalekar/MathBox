@@ -232,10 +232,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	mSensorListener = new ShakeEventListener();
         mSensorListener.setOnShakeListener(new ShakeEventListener.OnShakeListener(){
 			public void onShake() {
-				mStrExpression = "";
+				/* Modified by sagar */
+				clearCanvas();
 				Toast.makeText(MathBoxActivity.this, "Expression cleared!", Toast.LENGTH_SHORT).show();
-				//Modified by Sagar - 18th Nov
-				setWebViewText(Constants.textExpression);
 			}
 	});	
 	
