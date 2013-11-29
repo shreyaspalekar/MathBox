@@ -7,6 +7,9 @@ import android.webkit.WebView;
 
 /* Sagar Parmar - Added help activity */
 
+/**
+ * A new activity for showing help screen on performing "?" gesture  
+ */
 public class HelpActivity extends Activity {
 
 	private WebView mWebViewHelp;

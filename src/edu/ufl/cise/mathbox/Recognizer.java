@@ -7,7 +7,15 @@ import android.gesture.Prediction;
 import android.util.Log;
 
 public class Recognizer {
-	
+
+	/**
+	 * Given an arraylist of predictions and the gesture drawn, determine the best recognized gesture.
+	 * If not sure about the prediction i.e. prediction score is low then return the list of 4 gestures
+	 * that are recognized with the highest scores
+	 * @param predictions an array list of prediction as given by android system
+	 * @param gesture Gesture class having all gesture atrributes
+	 * @return Arraylist of possible recognized symbols
+	 */
 	public static ArrayList<String> recognizeGesture(ArrayList<Prediction> predictions, Gesture gesture) {
 		ArrayList<String> strCurrentPrediction = new ArrayList<String>();
     	Double predictionScore;

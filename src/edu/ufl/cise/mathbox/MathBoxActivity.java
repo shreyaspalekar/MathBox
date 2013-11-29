@@ -57,6 +57,10 @@ import expr.SyntaxException;
 /*Added by Anirudh Subramanian on 17th November Start*/
 /*Added by Anirudh Subramanian on 17th November End*/
 
+/**
+ * The main activity which displays main UI and implements gesture listener and touch listeners.
+ * Gesture are passed to a Recognizer class for recognition.     
+ */
 public class MathBoxActivity extends Activity implements OnGesturePerformedListener,OnTouchListener {
 
 	/*Added by Anirudh Subramanian on 17th November Start*/
@@ -99,6 +103,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     private static final String PREFS_NAME = "MathBoxPrefFile";
     private boolean bShowTutorialOnLaunch = true;
     /* Added by Sagar Parmar on 17th November End*/
+    /**
+     * On create method Android activity to initalize all UI elements and setting default values of variables.
+     */
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
 		// app initialization
@@ -242,6 +249,11 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         
     }
 
+	/**
+	 * Method to show an alert box given title and message to display
+	 * @param title title of the dialog box
+	 * @param msg message to display
+	 */
 	/* Sagar: Changed method signature on 18th nov */
 	private void showTutorialAlertDialog(String title, String msg) {
 		new AlertDialog.Builder(this).setTitle(title)
@@ -259,6 +271,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         .show();	
 	}
 	
+	/**
+	 * Android Activity's onStop() method overridden to save preference of
+	 * showing tutorial on lauch
+	 */
 	@Override
     protected void onStop(){
        super.onStop();
@@ -273,6 +289,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
       editor.commit();
     }
 	
+	/**
+	 * This method inflates menu on launch
+	 */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -280,6 +299,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         return super.onCreateOptionsMenu(menu); 
     }
     
+    /**
+     * A method to create an image on sd-card when user presses share button
+     */
     private void prepareImage() {
     	// create bitmap screen capture
     	if(mWebViewExpr != null) {
@@ -304,6 +326,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     	}
     }
     
+    /**
+     * Default method that gets called when an item from the menu is selected.
+     * On selection corresponding methods are called
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Pass the event to ActionBarDrawerToggle, if it returns
@@ -328,6 +354,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         return super.onOptionsItemSelected(item);
     }
     
+    /**
+     * Drawer item click listener which called on touch of any item in drawer list
+     */
     /* The click listner for ListView in the navigation drawer */
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
@@ -336,6 +365,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         }
     }
 
+    /**
+     * Handling of selected drawer item is done in this function.
+     * @param position the index which was selected
+     */
     private void selectItem(int position) {
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(position, true);
@@ -382,7 +415,6 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
      * When using the ActionBarDrawerToggle, you must call it during
      * onPostCreate() and onConfigurationChanged()...
      */
-
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
@@ -397,6 +429,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
     
+    /**
+     * Any gesture performed on gesture overlay will call this function.
+     * predictions given by android system is passed to the Recognizer class.
+     */
     @Override
     public void onGesturePerformed(GestureOverlayView overlay, Gesture gesture) {
     	ArrayList<Prediction> predictions = mGestureLibrary.recognize(gesture);
@@ -451,6 +487,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		}
     }
     
+    /**
+     * Any button touch events will be processed in this function.
+     * 3 buttons are included: 1. Backspace, 2. Evaluate, 3. Clear screen
+     */
     @Override
 	public boolean onTouch(View v, MotionEvent event) {
 		switch(v.getId()) {
@@ -493,6 +533,11 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		return false;
 	}   
     
+    /**
+     * Recognizer class gives a prediction and this method handles all
+     * the cases based on the prediction. 
+     * @param predicted predicted symbol given by recognizer
+     */
     private void handlePrediction(String predicted) {
     	if(predicted.equals(Constants.equalTo)) {
     		evaluateExpression();
@@ -544,6 +589,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
     		setWebViewText(mStrExpression);
     }
     
+    /**
+     * A method to evaluate expression when user uses evaluate gesture/button,
+     */
 	private void evaluateExpression() {
     	//Evaluate expression
 		try {
@@ -599,6 +647,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		mGestureOverlayView.clear(true);
     }
 
+	/**
+	 * Method to memorize current expression value when user performs "m/M" gesture
+	 */
    /*Added by Anirudh Subramanian on 17th November Begin*/
 	private void memorizeValue() {
 		mMemorizedExpression = mEvaluatedExpression;
@@ -606,6 +657,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		Toast.makeText(this, "Value stored in memory!", Toast.LENGTH_SHORT).show();
 	}
 
+	/**
+	 * Method to retrieve saved expression value when user performs "r/R" gesture
+	 */
 	private void retrieveMemory() {
 		if(!bExpressionMemorized) {
 			Toast.makeText(this,"Nothing in memory!",Toast.LENGTH_SHORT).show();
@@ -618,7 +672,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 
 
 	}
-	
+
+	/**
+	 * Method to save expression value to x or y variable when user performs "saveX/saveY" gesture
+	 */
 	private void memorizeVariable(String inputString) {
 		String mXValue = "";
 		if(mEvaluatedExpression != null && !"".equals(mEvaluatedExpression)) {
@@ -647,6 +704,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 	}
 	*/
 	
+	/**
+	 * This method will be called when the current activity comes to foreground. 
+	 */
 	@Override
 	protected void onResume() {
 		Log.d(Constants.TAG,"On resume called");
@@ -693,7 +753,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
    /*Added by Anirudh Subramanian on 17th November End*/ 
 
    /*Added by Anirudh Subramanian Begin*/
-    /*Method to replace constants and variables with their values*/
+    /**
+     * Method to replace constants and variables with their values
+     */
    	private String returnVariableOrConstant(String inputString) {
 		try{
 			if(Constants.constantsList.contains(inputString) ) {
@@ -749,6 +811,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 
    /*Added by Anirudh Subramanian End*/
 	
+   	/**
+   	 * Method to handle backspace gesture/button
+   	 */
 	private void handleBackspace() {
 		if(mStrExpression.length() >= 2 && !bExpressionEvaluated) {
 			mStrExpression = mStrExpression.substring(0, mStrExpression.length()-1);
@@ -762,6 +827,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		}
 	}
 	
+	/**
+   	 * Method to clear the screen and saved values when shaking the tablet
+   	 */
 	private void clearCanvas() {
 		setWebViewText(Constants.textExpression);
         	mStrExpression = "";
@@ -770,6 +838,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		mGestureOverlayView.clear(true);
 	}
 	
+	/**
+   	 * Utility method to escape TeX string
+   	 */
 	private String doubleEscapeTeX(String s) {
 		String t="";
 		for (int i=0; i < s.length(); i++) {
@@ -780,6 +851,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		return t;
 	}
 	
+	/**
+   	 * Utility method to escape set the text of output area
+   	 */
 	private void setWebViewText(String s) {
 		if (s.matches("")) {
 			mWebViewExpr.loadUrl("javascript:document.getElementById('math').innerHTML='';");
@@ -792,6 +866,10 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		}
 	}
 	
+	/**
+	 * Saves value of the current text in output area to a variable
+	 * when activity goes in background
+	 */
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
@@ -799,6 +877,9 @@ public class MathBoxActivity extends Activity implements OnGesturePerformedListe
 		outState.putString("savedExpression", mStrExpression);
 	}
 	
+	/**
+	 * Retrieves value of the output area to a variable when comes to foreground
+	 */
 	@Override
 	protected void onRestoreInstanceState(Bundle savedState) {		
 		Log.i(Constants.TAG, "onRestoreInstanceState");

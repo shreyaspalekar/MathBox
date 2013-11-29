@@ -3,6 +3,9 @@ package edu.ufl.cise.mathbox;
 import java.util.HashMap;
 import java.util.ArrayList;
 
+/**
+ * A class having static variables to represent all constant names and string used in the program
+ */
 public class Constants {
 	//Constants
 	public static final String TAG = "MathBox";

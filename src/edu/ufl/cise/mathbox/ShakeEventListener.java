@@ -64,6 +64,9 @@ public class ShakeEventListener implements SensorEventListener {
 		mShakeListener = listener;
 	}
 
+	/**
+	 * Sensor values changed, see if it was enough for reseting values
+	 */
 	@Override
 	public void onSensorChanged(SensorEvent se) {
 		// get sensor data
